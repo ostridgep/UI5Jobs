@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<script src="resources/sap-ui-core.js" type="text/javascript"
+	id="sap-ui-bootstrap" data-sap-ui-libs="sap.m,sap.ui.commons"
+	data-sap-ui-theme="sap_bluecrystal">
+	
+</script>
+
+    <script src="myresources/js/jscoord-1.1.1.js">/* note must be included before latlon-ellipsoidal.js */</script>
+    <script src="myresources/js/latlon-ellipsoidal.js"></script>
+    <script src="myresources/js/osgridref.js"></script>
+    <script src="myresources/js/dms.js"></script>
+<script language="JavaScript" type="text/javascript">
+var xmlDoc=""
+var sites=[]
+var plants=[]
+var assets=[]
+var selectedSite="";
+var selectedGroup="";
+var selectedAsset="";
+$.ajax({
+    type: "GET",
+    url: "TestData/T2_MPLT_ESVN.xml",
+    dataType: "xml",
+    success: function (xml) {
+
+    	xmlDoc=xml
+          
+       
+    }
+});
+function searchXML()
+{
+	$(xmlDoc).find('ASSET_EXTRACT ASSET').each(function(){
+		
+		 var text= $(this).attr('SITE');
+	        if ($.inArray(text, sites)===-1){
+	            sites.push(text);
+	        }
+    })
+
+    divText = "<h1>Site:</h1><br /><SELECT id='SITE' onchange='selectSite()'>"
+    	sites.sort();
+    for (i=0;i<sites.length;i++)
+    {
+       
+
+            
+
+            divText +=  "<option>" + sites[i] + "</option>" ;
+
+   
+    }
+    divText+= "</select><button onclick='buildFloc(1)'>View1</button>"
+    document.getElementById("results").innerHTML= divText;
+}
+function selectSite(){
+	d = document.getElementById("SITE").value;
+selectedSite=d;
+	searchXML1(selectedSite)
+}
+function selectGroup(){
+	d = document.getElementById("plant").value;
+selectedGroup=d;
+	searchXML2(selectedSite,selectedGroup)
+}
+function selectType(){
+	d = document.getElementById("type").value;
+selectedType=d;
+	//searchXML2(selectedSite,selectedGroup)
+}
+function searchXML1(site)
+{
+	$(xmlDoc).find('ASSET_EXTRACT ASSET[SITE="'+site+'"]').each(function(){
+		
+		 var text= $(this).attr('PLANT_GROUP');
+	        if ($.inArray(text, plants)===-1){
+	            plants.push(text);
+	        }
+    })
+
+    divText = "<h1>PLANT:</h1><br /><SELECT id='plant' onchange='selectGroup()'>"
+    	plants.sort();
+    for (i=0;i<plants.length;i++)
+    {
+       
+
+            
+
+            divText +=  "<option>" + plants[i] + "</option>" ;
+
+   
+    }
+    divText+= "</select><button onclick='buildFloc(2)'>View2</button>"
+    document.getElementById("results1").innerHTML= divText;
+}
+function searchXML2(site,group)
+{
+	
+	$(xmlDoc).find('ASSET_EXTRACT ASSET[SITE="'+site+'"]').each(function(){
+		
+		 var text= $(this).attr('ASSET_DESC');
+		 
+		 
+		 if ($(this).attr('PLANT_GROUP')==group){
+	        if ($.inArray(text, assets)===-1){
+	            assets.push(text);
+	        }
+		 }
+    })
+assets.sort();
+    divText = "<h1>AssetType:</h1><br /><SELECT id='type' onchange='selectType()'>"
+
+    for (i=0;i<assets.length;i++)
+    {
+       
+
+            
+
+            divText +=  "<option>" + assets[i] + "</option>" ;
+
+   
+    }
+    divText+= "</select><button onclick='buildFloc(3)'>View3</button>"
+    document.getElementById("results2").innerHTML= divText;
+}
+function buildFloc(n)
+{
+	var cnt=0;
+	
+	  divText = "<h1>Flocs:</h1><br /><TABLE><TR><TH>Functional Location</TH><TH>Equipment</TH></TR>"
+	$(xmlDoc).find('ASSET_EXTRACT ASSET[SITE="'+selectedSite+'"]').each(function(){
+		
+		 var text= $(this).attr('SITE');
+		   if ((n==1)||
+				   ((n==2)&& ($(this).attr('PLANT_GROUP')==selectedGroup))||
+				   ((n==3) && ($(this).attr('PLANT_GROUP')==selectedGroup) && ($(this).attr('ASSET_DESC')==selectedType))
+				   ){
+			   divText +=  "<TR><TD>" + $(this).attr('FUNC_LOC') + " - " + $(this).attr('FUNC_LOC_DESC')+"</TD><TD>" + $(this).attr('EQUIP') + " - "+$(this).attr('EQUIP_DESC')+"</TD></TR>" ;
+			   cnt++;
+		   }
+    })
+alert(n+"-"+cnt);
+  
+
+   
+    divText+= "</table>"
+    document.getElementById("results3").innerHTML= divText;
+}
+</script>
+<body>
+Site: <input type="text" name="site" id="site">
+<br />
+<input type="submit" value="Submit" onClick="searchXML()">
+<br />
+<br />
+<div id="results">
+</div>
+<div id="results1">
+</div>
+<div id="results2">
+</div>
+<div id="results3">
+</div>
+</body>
+<script>
+
+alert("hello2")
+       
+
+var os1 = new OSRef("424860", "291437");
+alert("OS Grid Reference: " + os1.toString() );
+var ll1 = os1.toLatLng();
+alert("Converted to Lat/Long: " + ll1.toString())
+alert(ll1)
+    
+
+
+</script>
+</html>
